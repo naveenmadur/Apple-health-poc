@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:apple_health_poc/apple_health_using_method_channel.dart';
 import 'package:apple_health_poc/utils.dart';
 import 'package:carp_serializable/carp_serializable.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,10 @@ import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(const HealthApp());
+void main() => runApp(
+      const AppleHealthUsingMethodChannel(),
+      // const HealthApp(),
+    );
 
 class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
@@ -502,6 +506,7 @@ class HealthAppState extends State<HealthApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Health Example'),
@@ -751,7 +756,8 @@ class HealthAppState extends State<HealthApp> {
                 (p.value as WorkoutHealthValue).workoutActivityType.name,
               ),
               subtitle: Text(
-                  '${getDate(p.dateFrom)} - ${getDate(p.dateTo)}\n${p.recordingMethod}'),
+                '${getDate(p.dateFrom)} - ${getDate(p.dateTo)}\n${p.recordingMethod}',
+              ),
             );
           }
           if (p.value is NutritionHealthValue) {
