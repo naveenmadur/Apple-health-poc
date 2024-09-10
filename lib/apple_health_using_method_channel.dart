@@ -29,7 +29,8 @@ class _AppleHealthUsingMethodChannelState
   Future<void> _getHealthData() async {
     Map<Object, Object>? healthData;
     try {
-      final result = await _platform.invokeMethod<Map<dynamic, dynamic>>(
+      final Map<dynamic, dynamic>? result =
+          await _platform.invokeMethod<Map<dynamic, dynamic>>(
         'fetchHealthData',
         <String, String>{'dataType': 'steps'},
       );
@@ -57,47 +58,54 @@ class _AppleHealthUsingMethodChannelState
     await _getHealthData();
   }
 
+  // Method to build the health data into a ListView
+  Widget _buildHealthDataList() {
+    if (_healthData == null) {
+      return const Center(child: Text('Fetching health data...'));
+    }
+
+    final List<Widget> healthWidgets = <Widget>[
+      const SizedBox(height: 50),
+    ];
+
+    // Iterate through each health data type and build a list
+    _healthData!.forEach((Object key, dynamic value) {
+      final List<dynamic> dataList = value as List<dynamic>;
+
+      healthWidgets.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(
+            key.toString().toUpperCase(),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+
+      for (final dynamic data in dataList) {
+        healthWidgets.add(
+          ListTile(
+            title: Text('Value: ${data['value']}'),
+            subtitle: Text('Date: ${data['date']}'),
+          ),
+        );
+      }
+    });
+
+    return ListView(
+      padding: const EdgeInsets.all(32.0),
+      children: healthWidgets,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Text(
-            _healthData.toString(),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w200,
-              color: Colors.black,
-            ),
-          ),
-        ),
-      ),
+      home: Scaffold(body: _buildHealthDataList()),
     );
-  }
-}
-
-class HealthDataFetcher {
-  static const MethodChannel _channel = MethodChannel('com.apple_health_poc');
-
-  // Request authorization
-  static Future<void> requestAuthorization() async {
-    try {
-      final result = await _channel.invokeMethod('requestAuthorization');
-      debugPrint('Authorization result: $result');
-    } on PlatformException catch (e) {
-      debugPrint('Error in requesting authorization: ${e.message}');
-    }
-  }
-
-  // Fetch health data
-  static Future<void> fetchHealthData(String dataType) async {
-    try {
-      final result = await _channel.invokeMethod(
-          'fetchHealthData', <String, String>{'dataType': dataType});
-      debugPrint('Health data: $result');
-    } on PlatformException catch (e) {
-      debugPrint('Error fetching health data: ${e.message}');
-    }
   }
 }
