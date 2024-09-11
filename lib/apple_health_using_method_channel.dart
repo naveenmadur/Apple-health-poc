@@ -74,8 +74,8 @@ class _AppleHealthUsingMethodChannelState
     if (date == null) {
       return 'Null';
     }
-    final DateTime convertedDate = DateTime.parse(date);
-    final DateFormat format = DateFormat('dd/MM - hh-mm a');
+    final DateTime convertedDate = DateTime.parse(date).toLocal();
+    final DateFormat format = DateFormat('dd/MM - hh:mm a');
     return format.format(convertedDate);
   }
 

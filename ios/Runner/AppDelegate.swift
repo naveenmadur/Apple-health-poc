@@ -63,7 +63,7 @@ import HealthKit
                 for sample in quantitySamples {
                     stepData.append([
                         "value": sample.quantity.doubleValue(for: HKUnit.count()),
-                        "date": sample.startDate.description
+                        "date": self.formatDate(sample.startDate)
                     ])
                 }
             }
@@ -91,8 +91,8 @@ import HealthKit
                     }
                     sleepData.append([
                         "state": sleepState,
-                        "startDate": sample.startDate.description,
-                        "endDate": sample.endDate.description
+                        "startDate": self.formatDate(sample.startDate),
+                        "endDate": self.formatDate(sample.endDate)
                     ])
                 }
             }
@@ -114,7 +114,7 @@ import HealthKit
                 for sample in quantitySamples {
                     energyData.append([
                         "value": sample.quantity.doubleValue(for: HKUnit.kilocalorie()),
-                        "date": sample.startDate.description
+                        "date": self.formatDate(sample.startDate)
                     ])
                 }
             }
@@ -143,5 +143,12 @@ import HealthKit
                 result(FlutterError(code: "AUTH_ERROR", message: error?.localizedDescription ?? "Authorization failed", details: nil))
             }
         }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime,.withFractionalSeconds]
+        dateFormatter.timeZone = TimeZone.current
+        return dateFormatter.string(from: date)
     }
 }
