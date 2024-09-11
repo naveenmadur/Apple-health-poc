@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class AppleHealthUsingMethodChannel extends StatefulWidget {
   const AppleHealthUsingMethodChannel({super.key});
@@ -34,6 +35,7 @@ class _AppleHealthUsingMethodChannelState
         'fetchHealthData',
         <String, String>{'dataType': 'steps'},
       );
+
       // Casting from dynamic to Object
       if (result != null) {
         healthData = Map<Object, Object>.from(result);
@@ -58,6 +60,25 @@ class _AppleHealthUsingMethodChannelState
     await _getHealthData();
   }
 
+  String getDate(final String? date) {
+    if (date == null) {
+      return 'Null';
+    }
+    final DateTime convertedDate = DateTime.parse(date);
+    final DateFormat format = DateFormat('dd-MM-yyyy');
+
+    return format.format(convertedDate);
+  }
+
+  String getDateAndTime(final String? date) {
+    if (date == null) {
+      return 'Null';
+    }
+    final DateTime convertedDate = DateTime.parse(date);
+    final DateFormat format = DateFormat('dd/MM - hh-mm a');
+    return format.format(convertedDate);
+  }
+
   // Method to build the health data into a ListView
   Widget _buildHealthDataList() {
     if (_healthData == null) {
@@ -78,8 +99,9 @@ class _AppleHealthUsingMethodChannelState
           child: Text(
             key.toString().toUpperCase(),
             style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ),
@@ -88,8 +110,24 @@ class _AppleHealthUsingMethodChannelState
       for (final dynamic data in dataList) {
         healthWidgets.add(
           ListTile(
-            title: Text('Value: ${data['value']}'),
-            subtitle: Text('Date: ${data['date']}'),
+            title: Text(
+              'Value: ${data[key.toString() == 'sleep' ? 'state' : 'value']}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal,
+              ),
+            ),
+            subtitle: Text(
+              key.toString() == 'sleep'
+                  ? '${getDateAndTime(data['startDate'])} - ${getDateAndTime(data['endDate'])}'
+                  : 'Date: ${getDate(data['date'] ?? '')}',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
         );
       }
@@ -105,7 +143,10 @@ class _AppleHealthUsingMethodChannelState
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(body: _buildHealthDataList()),
+      home: Scaffold(
+        body: _buildHealthDataList(),
+        backgroundColor: Colors.black,
+      ),
     );
   }
 }
