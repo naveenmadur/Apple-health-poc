@@ -38,10 +38,21 @@ import HealthKit
         // Define the data types to fetch
         let healthDataTypes = Set([
             HKQuantityType.quantityType(forIdentifier: .stepCount),
+            HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning),
+            HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned),
+            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
+            HKQuantityType.quantityType(forIdentifier: .flightsClimbed),
+            HKQuantityType.quantityType(forIdentifier: .bodyMass),
+            HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage),
+            HKQuantityType.quantityType(forIdentifier: .bodyMassIndex),
+            HKQuantityType.quantityType(forIdentifier: .height),
             HKCategoryType.categoryType(forIdentifier: .sleepAnalysis),
-            HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)
+            HKQuantityType.quantityType(forIdentifier: .heartRate),
+            HKQuantityType.quantityType(forIdentifier: .bloodGlucose),
+            HKQuantityType.quantityType(forIdentifier: .respiratoryRate),
+            // HKQuantityType.quantityType(forIdentifier: .uvExposure)
         ].compactMap { $0 })
-        
+
         // Create a query to fetch all the required data types
         let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())
         let endDate = Date()
@@ -67,12 +78,188 @@ import HealthKit
                     ])
                 }
             }
-            results["steps"] = stepData
+            results["stepCount"] = stepData
             dispatchGroup.leave()
         }
         healthStore.execute(stepsQuery)
+
+        // Fetch distance walking/running
+        dispatchGroup.enter()
+        let distanceType = HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!
+        let distanceQuery = HKSampleQuery(sampleType: distanceType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var distanceData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    distanceData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.meter()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["distanceWalkingRunning"] = distanceData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(distanceQuery)
         
-        // Fetch sleep data
+        // Fetch basal energy burned
+        dispatchGroup.enter()
+        let basalEnergyType = HKQuantityType.quantityType(forIdentifier: .basalEnergyBurned)!
+        let basalEnergyQuery = HKSampleQuery(sampleType: basalEnergyType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var basalEnergyData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    basalEnergyData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.kilocalorie()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["basalEnergyBurned"] = basalEnergyData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(basalEnergyQuery)
+        
+        // Fetch active energy burned
+        dispatchGroup.enter()
+        let activeEnergyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+        let activeEnergyQuery = HKSampleQuery(sampleType: activeEnergyType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var activeEnergyData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    activeEnergyData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.kilocalorie()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["activeEnergyBurned"] = activeEnergyData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(activeEnergyQuery)
+        
+        // Fetch flights climbed
+        dispatchGroup.enter()
+        let flightsClimbedType = HKQuantityType.quantityType(forIdentifier: .flightsClimbed)!
+        let flightsClimbedQuery = HKSampleQuery(sampleType: flightsClimbedType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var flightsClimbedData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    flightsClimbedData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.count()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["flightsClimbed"] = flightsClimbedData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(flightsClimbedQuery)
+        
+        // Fetch body mass (weight)
+        dispatchGroup.enter()
+        let bodyMassType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        let bodyMassQuery = HKSampleQuery(sampleType: bodyMassType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var bodyMassData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    bodyMassData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo)),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["bodyMass"] = bodyMassData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(bodyMassQuery)
+        
+        // Fetch body fat percentage
+        dispatchGroup.enter()
+        let bodyFatPercentageType = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
+        let bodyFatPercentageQuery = HKSampleQuery(sampleType: bodyFatPercentageType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var bodyFatPercentageData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    bodyFatPercentageData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.percent()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["bodyFatPercentage"] = bodyFatPercentageData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(bodyFatPercentageQuery)
+        
+        // Fetch body mass index (BMI)
+        dispatchGroup.enter()
+        let bodyMassIndexType = HKQuantityType.quantityType(forIdentifier: .bodyMassIndex)!
+        let bodyMassIndexQuery = HKSampleQuery(sampleType: bodyMassIndexType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var bodyMassIndexData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    bodyMassIndexData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.count()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["bodyMassIndex"] = bodyMassIndexData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(bodyMassIndexQuery)
+        
+        // Fetch height
+        dispatchGroup.enter()
+        let heightType = HKQuantityType.quantityType(forIdentifier: .height)!
+        let heightQuery = HKSampleQuery(sampleType: heightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var heightData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    heightData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit.meter()),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["height"] = heightData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(heightQuery)
+        
+        // Fetch sleep duration
         dispatchGroup.enter()
         let sleepType = HKCategoryType.categoryType(forIdentifier: .sleepAnalysis)!
         let sleepQuery = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
@@ -88,6 +275,8 @@ import HealthKit
                         sleepState = "In Bed"
                     } else if sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue {
                         sleepState = "Asleep"
+                    } else if sample.value == HKCategoryValueSleepAnalysis.awake.rawValue {
+                        sleepState = "Awake"
                     }
                     sleepData.append([
                         "state": sleepState,
@@ -96,32 +285,76 @@ import HealthKit
                     ])
                 }
             }
-            results["sleep"] = sleepData
+            results["sleepDuration"] = sleepData
             dispatchGroup.leave()
         }
         healthStore.execute(sleepQuery)
         
-        // Fetch active energy burned
+        // Fetch heart rate
         dispatchGroup.enter()
-        let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
-        let energyQuery = HKSampleQuery(sampleType: energyType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+        let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
+        let heartRateQuery = HKSampleQuery(sampleType: heartRateType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
             if let error = error {
                 result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
                 return
             }
-            var energyData = [[String: Any]]()
+            var heartRateData = [[String: Any]]()
             if let quantitySamples = samples as? [HKQuantitySample] {
                 for sample in quantitySamples {
-                    energyData.append([
-                        "value": sample.quantity.doubleValue(for: HKUnit.kilocalorie()),
+                    heartRateData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit(from: "count/min")),
                         "date": self.formatDate(sample.startDate)
                     ])
                 }
             }
-            results["activeEnergyBurned"] = energyData
+            results["heartRate"] = heartRateData
             dispatchGroup.leave()
         }
-        healthStore.execute(energyQuery)
+        healthStore.execute(heartRateQuery)
+        
+        // Fetch blood glucose
+        dispatchGroup.enter()
+        let bloodGlucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+        let bloodGlucoseQuery = HKSampleQuery(sampleType: bloodGlucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var bloodGlucoseData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    bloodGlucoseData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit(from: "mg/dL")),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["bloodGlucose"] = bloodGlucoseData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(bloodGlucoseQuery)
+        
+        // Fetch respiratory rate
+        dispatchGroup.enter()
+        let respiratoryRateType = HKQuantityType.quantityType(forIdentifier: .respiratoryRate)!
+        let respiratoryRateQuery = HKSampleQuery(sampleType: respiratoryRateType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { (query, samples, error) in
+            if let error = error {
+                result(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
+                return
+            }
+            var respiratoryRateData = [[String: Any]]()
+            if let quantitySamples = samples as? [HKQuantitySample] {
+                for sample in quantitySamples {
+                    respiratoryRateData.append([
+                        "value": sample.quantity.doubleValue(for: HKUnit(from: "count/min")),
+                        "date": self.formatDate(sample.startDate)
+                    ])
+                }
+            }
+            results["respiratoryRate"] = respiratoryRateData
+            dispatchGroup.leave()
+        }
+        healthStore.execute(respiratoryRateQuery)
         
         // Wait for all queries to finish
         dispatchGroup.notify(queue: DispatchQueue.main) {
@@ -132,8 +365,19 @@ import HealthKit
     private func requestAuthorization(result: @escaping FlutterResult) {
         let typesToRead: Set<HKObjectType> = Set([
             HKObjectType.quantityType(forIdentifier: .stepCount),
-            HKObjectType.categoryType(forIdentifier: .sleepAnalysis),
-            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)
+            HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning),
+            HKObjectType.quantityType(forIdentifier: .basalEnergyBurned),
+            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
+            HKObjectType.quantityType(forIdentifier: .flightsClimbed),
+            HKObjectType.quantityType(forIdentifier: .bodyMass),
+            HKObjectType.quantityType(forIdentifier: .bodyFatPercentage),
+            HKObjectType.quantityType(forIdentifier: .bodyMassIndex),
+            HKObjectType.quantityType(forIdentifier: .height),
+            HKObjectType.quantityType(forIdentifier: .heartRate),
+            HKObjectType.quantityType(forIdentifier: .bloodGlucose),
+            HKObjectType.quantityType(forIdentifier: .respiratoryRate),
+            // HKObjectType.quantityType(forIdentifier: .uvExposure),
+            HKCategoryType.categoryType(forIdentifier: .sleepAnalysis)
         ].compactMap { $0 })
         
         healthStore.requestAuthorization(toShare: nil, read: typesToRead) { (success, error) in

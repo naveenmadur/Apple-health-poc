@@ -64,7 +64,11 @@ class _AppleHealthUsingMethodChannelState
     if (date == null) {
       return 'Null';
     }
-    final DateTime convertedDate = DateTime.parse(date);
+    DateTime convertedDate = DateTime.now();
+    if (date.isNotEmpty) {
+      convertedDate = DateTime.parse(date);
+    }
+
     final DateFormat format = DateFormat('dd-MM-yyyy');
 
     return format.format(convertedDate);
@@ -84,6 +88,7 @@ class _AppleHealthUsingMethodChannelState
     if (_healthData == null) {
       return const Center(child: Text('Fetching health data...'));
     }
+    print(_healthData.toString());
 
     final List<Widget> healthWidgets = <Widget>[
       const SizedBox(height: 50),
@@ -120,8 +125,8 @@ class _AppleHealthUsingMethodChannelState
             ),
             subtitle: Text(
               key.toString() == 'sleep'
-                  ? '${getDateAndTime(data['startDate'])} - ${getDateAndTime(data['endDate'])}'
-                  : 'Date: ${getDate(data['date'] ?? '')}',
+                  ? '${(data['startDate'])} - ${(data['endDate'])}'
+                  : 'Date: ${(data['date'] ?? '')}',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
